@@ -1,0 +1,78 @@
+#@DetailDescriptionStart
+###############################################################################
+# Extreme Networks(R) CLI Profile Library
+#
+# Script        	: CFMMEPExpPortShutdown
+# Revision      	: 1.0
+# Last Updated  	: 16 Feb 2024
+# 
+# Purpose: Convert MAC addresses with Dynamic learning to Static (Sticky). 
+# 
+# Notes: This is a deployment script
+#
+# Author			: Karthikeyan Krish
+# Contact			: karthikeyan.krish@extremenetworks.com
+###############################################################################
+#  Change Log
+#
+# 	16 February 2024: Script Created
+
+# Sample Log
+# <Noti:FDB.MACLocking.FrstArrvLrnLmtRch> Reached first-arrival MAC address learning limit of 1 on port XX
+
+# Working principle
+# This script is invoked by event above mentioned. Once the Dynamic limit of 1 is reached it makes the MAC-locking to static and disable dynamic limit to 0
+
+# Sample output
+
+# UZTNA-5420-Blr.34 # show config | inc mac-locking
+# enable mac-locking
+# enable mac-locking ports 5
+# configure mac-locking ports 5 first-arrival limit-learning 1
+# configure mac-locking ports 5 log violation on
+# configure mac-locking ports 5 log threshold on
+# configure mac-locking ports 5 learn-limit-action disable-port
+# configure mac-locking ports $EVENT.LOG_PARAM_1 first-arrival move-to-static
+# configure mac-locking ports $EVENT.LOG_PARAM_1 first-arrival limit-learning 0
+
+# UZTNA-5420-Blr.35 # 
+# 02/16/2024 12:33:52.02 <Info:vlan.msgs.portLinkStateUp> Port 5 link UP at speed 1 Gbps and full-duplex
+# 02/16/2024 12:33:56.06 <Noti:FDB.MACLocking.FrstArrvLrnLmtRch> Reached first-arrival MAC address learning limit of 1 on port 5
+# 02/16/2024 12:33:56.06 <Noti:UPM.Msg.upmMsgExshLaunch> Launched profile port_mac_lock_to_static for the event log-message
+
+# UZTNA-5420-Blr.35 # show config | inc mac-locking
+# enable mac-locking
+# enable mac-locking ports 5
+# configure mac-locking ports 5 first-arrival limit-learning 0
+# configure mac-locking ports 5 log violation on
+# configure mac-locking ports 5 log threshold on
+# configure mac-locking ports 5 learn-limit-action disable-port
+# configure mac-locking ports 5 static add station a4:4c:c8:f0:83:b3
+# configure mac-locking ports $EVENT.LOG_PARAM_1 first-arrival move-to-static
+# configure mac-locking ports $EVENT.LOG_PARAM_1 first-arrival limit-learning 0
+
+# UZTNA-5420-Blr.35 # 
+# UZTNA-5420-Blr.35 # 02/16/2024 12:34:06.90 <Info:vlan.msgs.portLinkStateDown> Port 5 link down
+# UZTNA-5420-Blr.35 # 02/16/2024 12:34:12.66 <Info:vlan.msgs.portLinkStateUp> Port 5 link UP at speed 1 Gbps and full-duplex
+# 02/16/2024 12:34:16.10 <Noti:FDB.MACLocking.FirstArrvLrnLmtExcd> MAC address D4:BE:D9:88:6D:61 not learned on port 5 as MAC address learning limit has been exceeded.
+# 02/16/2024 12:34:16.10 <Info:vlan.dbg.info> Toggling AdminState on Port 5 with pif 0x55935fd1c0
+# 02/16/2024 12:34:16.12 <Info:vlan.msgs.portLinkStateDown> Port 5 link down
+
+###############################################################################
+#@DetailDescriptionEnd
+
+
+create upm profile port_mac_lock_to_static
+configure mac-locking ports $EVENT.LOG_PARAM_1 first-arrival move-to-static
+configure mac-locking ports $EVENT.LOG_PARAM_1
+ first-arrival limit-learning 0
+.
+
+create log filter port_mac_lock_filter
+configure log filter port_mac_lock_to_static add events FDB.MACLocking.FrstArrvLrnLmtRch
+
+create log target upm port_mac_lock_to_static
+configure log target upm port_mac_lock_to_static filter port_mac_lock_filter
+configure log target upm port_mac_lock_to_static match any
+
+enable log target upm port_mac_lock_to_static
