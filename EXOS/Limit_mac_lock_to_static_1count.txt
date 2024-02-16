@@ -2,7 +2,7 @@
 ###############################################################################
 # Extreme Networks(R) CLI Profile Library
 #
-# Script        	: CFMMEPExpPortShutdown
+# Script        	: Limit_mac_lock_to_static_1count
 # Revision      	: 1.0
 # Last Updated  	: 16 Feb 2024
 # 
