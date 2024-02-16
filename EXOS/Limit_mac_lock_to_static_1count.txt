@@ -61,8 +61,11 @@
 ###############################################################################
 #@DetailDescriptionEnd
 
-
+enable cli scripting
+disable clipaging
 create upm profile port_mac_lock_to_static
+# Start typing the profile and end with a . as the first and the only character on a line.
+# Use - edit upm profile <name> - for block mode capability
 configure mac-locking ports $EVENT.LOG_PARAM_1 first-arrival move-to-static
 configure mac-locking ports $EVENT.LOG_PARAM_1
  first-arrival limit-learning 0
